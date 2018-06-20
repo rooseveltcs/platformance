@@ -75,20 +75,24 @@ public class Client {
       for (int i = 0; i < itemArray.length; i++) {
          if (itemArray[i].getType() == "Player") {
             Player player = (Player) itemArray[i];
-            camera.addGoal(player.getCoords()[0], player.getCoords()[1]);
+            
+            boolean canJump = false;
             
             if (player.getHitbox() >= 0) {
                Hitbox hb = hitboxes[player.getHitbox()];
                int[] ret = hb.collide(hitboxes, player.getHitbox());
                player.incrementX(ret[0] - player.getX());
                player.incrementY(ret[1] - player.getY());
+               if (ret[4] == -1) {
+                  canJump = true;
+               }
             }
             
             if (keyInputs[39] >= 1) {
-               player.incrementX(1);
+               player.incrementX((keyInputs[16] >= 1) ? 2 : 1);
             }
             if (keyInputs[37] >= 1) {
-               player.incrementX(-1);
+               player.incrementX((keyInputs[16] >= 1) ? -2 : -1);
             }
             if (keyInputs[39] == 2) {
                player.face(true);
@@ -96,6 +100,17 @@ public class Client {
             if (keyInputs[37] == 2) {
                player.face(false);
             }
+            if (keyInputs[90] == 2 && canJump) {
+               player.setJumpTick(tickCount);
+            }
+            if (keyInputs[90] == 1 && player.getJumpTick() + 128 > tickCount) {
+               player.incrementY(-2);
+            }
+            if (keyInputs[90] <= 0) {
+               player.setJumpTick(-255);
+            }
+            player.incrementY(1);
+            camera.addGoal(player.getX(), player.getY());
             player.updateHitbox(newHitboxes.size());
             newHitboxes.add(new Hitbox(0, player.getX(), player.getY(), 32, 64));
          }
@@ -109,23 +124,24 @@ public class Client {
          else {
             
          }
+         camera.averageGoals();
+         camera.updateCamera();
          SpritePackage[] spritesRet = itemArray[i].getSprites();
          currentRoom = currentRoom;
          for (int sprt = 0; sprt < spritesRet.length; sprt++) {
             spritesToDraw.add(spritesRet[sprt]);
          }
       }
-      camera.averageGoals();
-      camera.updateCamera();
       
       //draw loop
       for (int sprt = 0; sprt < spritesToDraw.size(); sprt++) {
          drawSprite(canvas, g, spritesToDraw.get(sprt), camera);
       }
-      for (int i = 0; i < hitboxes.length; i++) {
-         drawSprite(canvas, g, "hb.png", hitboxes[i].getX(), hitboxes[i].getY(), hitboxes[i].getWidth(), hitboxes[i].getHeight(), camera);
-      }
+      /*for (int i = 0; i < hitboxes.length; i++) {
+         
+      }*/
       spritesToDraw.clear();
+      drawSprite(canvas, g, "test.png", 0 ,0, camera);
       
       hitboxes = newHitboxes.toArray(new Hitbox[0]);
       
@@ -154,19 +170,21 @@ public class Client {
    //draws sprite given camera positioning
    public static void drawSprite(DisplayCanvas canvas, Graphics g, String filename, int x, int y, int width, int height, Camera cam) {
       int[] camDisplace = cam.getCoords();
-      camDisplace[0] = DIMENSIONS[0] / 2 - camDisplace[0];
-      camDisplace[1] = DIMENSIONS[1] / 2 - camDisplace[1];
-      Image img = sprite(filename);
-      double[] zoomMultiplier = new double[] {canvas.getDimensions()[0] / DIMENSIONS[0] * cam.getZoom(), canvas.getDimensions()[1] / DIMENSIONS[1] * cam.getZoom()};
-      int realX = (int) ((x + camDisplace[0] - /*img.getWidth(null) / 2*/Math.abs(width)) * zoomMultiplier[0]);
-      if (width < 0) {
-         realX += width * -zoomMultiplier[0];
+      if (Math.abs(camDisplace[0] - x) < (width + DIMENSIONS[0]) / 2 && Math.abs(camDisplace[1] - y) < (height + DIMENSIONS[1]) / 2) {
+         camDisplace[0] = DIMENSIONS[0] / 2 - camDisplace[0];
+         camDisplace[1] = DIMENSIONS[1] / 2 - camDisplace[1];
+         Image img = sprite(filename);
+         double[] zoomMultiplier = new double[] {canvas.getDimensions()[0] / DIMENSIONS[0] * cam.getZoom(), canvas.getDimensions()[1] / DIMENSIONS[1] * cam.getZoom()};
+         int realX = (int) ((x + camDisplace[0] - Math.abs(width / 2)) * zoomMultiplier[0]);
+         if (width < 0) {
+            realX += width * -zoomMultiplier[0];
+         }
+         int realY = (int) ((y + camDisplace[1] - Math.abs(height / 2)) * zoomMultiplier[1]);
+         if (height < 0) {
+            realY += height * -zoomMultiplier[1];
+         }
+         g.drawImage(img, realX, realY, (int) (width * zoomMultiplier[0]), (int) (height * zoomMultiplier[1]), null);
       }
-      int realY = (int) ((y + camDisplace[1] - /*img.getHeight(null) / 2*/Math.abs(height)) * zoomMultiplier[1]);
-      if (height < 0) {
-         realY += height * -zoomMultiplier[1];
-      }
-      g.drawImage(img, realX, realY, (int) (width * zoomMultiplier[0]), (int) (height * zoomMultiplier[1]), null);
    }
    
    //draws sprite with default width & height
@@ -192,9 +210,22 @@ public class Client {
          new Level(new Room[] {
             new Room(new Item[] {
                new Tilemap(128, -16, new String[][] {
-                  new String[] {"0013"},
-                  new String[] {"0011"},
-                  new String[] {"0017"}
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0010", "0002", "0002", "0003"},
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0010", "0002", "0002", "0003"},
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0010", "0002", "0002", "0003"},
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0010", "0002", "0002", "0003"},
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0010", "0002", "0002", "0003"},
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0010", "0002", "0002", "0003"},
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0011"},
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0011"},
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0011"},
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0011"},
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0011"},
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0011"},
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0011"},
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0011"},
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0011"},
+                  new String[] {"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000", "0011"}
                }),
                new Player(16 - 128, -48)
             })

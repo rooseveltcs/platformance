@@ -71,6 +71,8 @@ public class Hitbox implements Position {
       int damageSum = 0;
       int newX = x;
       int newY = y;
+      int horizColl = 0;
+      int vertColl = 0;
       for (int i = 0; i < testWith.length; i++) {
          if (i != except) {
             if (Math.abs(testWith[i].getX() - hb.getX()) < hb.getWidth() / 2 + testWith[i].getWidth() / 2
@@ -79,24 +81,28 @@ public class Hitbox implements Position {
                if (testWith[i].getType() == 2) {
                   if (Math.abs(testWith[i].getX() - hb.getX()) > Math.abs(testWith[i].getY() - hb.getY())) {
                      if (hb.getX() < testWith[i].getX()) {
-                        newX = testWith[i].getX() - (hb.getWidth() + testWith[i].getWidth()) / 2;
+                        newX = testWith[i].getX() - (hb.getWidth() / 2 + testWith[i].getWidth() / 2);
+                        horizColl = -1;
                      }
                      else {
-                        newX = testWith[i].getX() + (hb.getWidth() + testWith[i].getWidth()) / 2;
+                        newX = testWith[i].getX() + (hb.getWidth() / 2 + testWith[i].getWidth() / 2);
+                        horizColl = 1;
                      }
                   }
                   else {
                      if (hb.getY() < testWith[i].getY()) {
-                        newY = testWith[i].getY() - (hb.getHeight() + testWith[i].getHeight()) / 2;
+                        newY = testWith[i].getY() - (hb.getHeight() / 2 + testWith[i].getHeight() / 2);
+                        vertColl = -1;
                      }
                      else {
-                        newY = testWith[i].getY() + (hb.getHeight() + testWith[i].getHeight()) / 2;
+                        newY = testWith[i].getY() + (hb.getHeight() / 2 + testWith[i].getHeight() / 2);
+                        vertColl = 1;
                      }
                   }
                }
             }
          }
       }
-      return new int[] {newX, newY, damageSum};
+      return new int[] {newX, newY, damageSum, horizColl, vertColl};
    }
 }

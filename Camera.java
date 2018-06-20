@@ -27,8 +27,22 @@ public class Camera implements Position {
       }
       else {
          double angle = Math.atan((goalY - y) / (goalX - x));
-         x += (goalX > x) ? speed * Math.cos(angle) : -speed * Math.cos(angle);
-         y += (goalY > y) ? speed * Math.sin(angle) : -speed * Math.sin(angle);
+         double changeX = (goalX > x) ? speed * Math.cos(angle) : -speed * Math.cos(angle);
+         double changeY = (goalY > y) ? speed * Math.sin(angle) : -speed * Math.sin(angle);
+         if (gX > x) {
+            changeX = Math.abs(changeX);
+         }
+         else {
+            changeX = -Math.abs(changeX);
+         }
+         if (gY > y) {
+            changeY = Math.abs(changeY);
+         }
+         else {
+            changeY = -Math.abs(changeY);
+         }
+         x += changeX;
+         y += changeY;
       }
    }
    
@@ -42,15 +56,17 @@ public class Camera implements Position {
    }
    
    public void averageGoals() {
-      int sumX = 0;
-      int sumY = 0;
-      for(int i = 0; i < goals.size(); i++) {
-         sumX += goals.get(i)[0];
-         sumY += goals.get(i)[1];
+      if (goals.size() > 0) {
+         int sumX = 0;
+         int sumY = 0;
+         for (int i = 0; i < goals.size(); i++) {
+            sumX += goals.get(i)[0];
+            sumY += goals.get(i)[1];
+         }
+         goalX = sumX / goals.size();
+         goalY = sumY / goals.size();
+         goals.clear();
       }
-      goalX = sumX / goals.size();
-      goalY = sumY / goals.size();
-      goals.clear();
    }
    
    //returns camera's current center coordinates

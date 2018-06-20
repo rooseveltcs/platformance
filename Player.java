@@ -4,6 +4,8 @@ public class Player implements Position, Item {
    private double y;
    private boolean facing;
    private int lastHitbox;
+   private int jumpTick;
+   private int[] lastCollision;
    public boolean delete;
    
    public Player(int initialX, int initialY) {
@@ -11,7 +13,9 @@ public class Player implements Position, Item {
       y = initialY;
       facing = true;
       delete = false;
+      jumpTick = -255;
       lastHitbox = -1;
+      lastCollision = new int[] {0, 0};
    }
    
    public int[] getCoords() {
@@ -60,5 +64,21 @@ public class Player implements Position, Item {
    
    public boolean shouldDelete() {
       return delete;
+   }
+   
+   public void setJumpTick(int tick) {
+      jumpTick = tick;
+   }
+   
+   public int getJumpTick() {
+      return jumpTick;
+   }
+   
+   public void setLastCollision(int[] coll) {
+      lastCollision = coll;
+   }
+   
+   public int[] getLastCollsion() {
+      return lastCollision;
    }
 }
