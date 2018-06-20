@@ -33,7 +33,13 @@ public class Player implements Position, Item {
    }
    
    public SpritePackage[] getSprites() {
-      return new SpritePackage[] {new SpritePackage("playerWalk1.png", (int) x, (int) y, facing ? 1 : -1, 1)};
+      if (lastCollision[0] == 0) {
+         return new SpritePackage[] {new SpritePackage("playerWalk1.png", (int) x, (int) y, facing ? 1 : -1, 1)};
+      }
+      else {
+         facing = (lastCollision[0] == 1);
+         return new SpritePackage[] {new SpritePackage("playerCling1.png", (int) x, (int) y, facing ? 1 : -1, 1)};
+      }
    }
    
    public void face (boolean dir) {
